@@ -1,3 +1,4 @@
+import sys
 import os
 
 def extract(key, stego_img):
@@ -8,13 +9,14 @@ def extract(key, stego_img):
         key_value = int(key[i])
         bitstring += str( stego_value - key_value )
 
+
     #separate into groups of 8
     n=8
-    out = [(bitstring[i:i+n]) for i in range(0, len(bitstring), n)]
+    bytes = [(bitstring[i:i+n]) for i in range(0, len(bitstring), n)]
 
-    bytes = []
-    for i in range(len(out)):
-        bytes.append(int(out[i],2))
+    for i in range(8):
+        print (bytes[i])
+
 
     return bytes
 
@@ -42,15 +44,29 @@ def embed(carrier, msg):
 def get_ppm_as_byte_list(image_file_name):
     f = open(sys.path[0] + '/UPRB/images/'+ image_file_name, "r")
     content = f.read()
-    byte_array = bytearray(content, "utf8")
-    byte_list = []
+    content = content.split() #remove white space
 
-    for byte in byte_array:
-        binary_representation = bin(byte)
-        byte_list.append(binary_representation)
+    byte_list = []
+    for i in range(len(content)):
+        binary = toBinary(content[i])
+
+        for i in range(len(binary)):
+            binary[i] = str(binary[i])
+            while len(binary[i]) != 8:
+                binary[i] = '0'+ binary[i]
+
+        byte_list.extend(binary)
     
     f.close()
     return byte_list
+
+def toBinary(a):
+    l,m=[],[]
+    for i in a:
+        l.append(ord(i))
+    for i in l:
+        m.append(int(bin(i)[2:]))
+    return m
 
 def get_ppm_as_list(image_file_name):
     f = open(sys.path[0] + '/UPRB/images/'+ image_file_name, "r")
@@ -71,9 +87,6 @@ def reveal_image():
     reveal_img = extract(key, stego)
 
     f = open("Steganography/UPRB/images/reveal.ppm", "w")
-
-    for i in range(4):
-        f.write(key[i]+" ")
     
     for i in range(len(reveal_img)):
         f.write(str(reveal_img[i])+" ")
